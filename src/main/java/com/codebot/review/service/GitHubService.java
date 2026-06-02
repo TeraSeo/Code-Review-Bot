@@ -15,8 +15,9 @@ public class GitHubService {
     private final WebClient githubWebClient;
 
     public List<ChangedFile> getPullRequestFiles(String repoFullName, int prNumber) {
+        String[] parts = repoFullName.split("/");
         return githubWebClient.get()
-                .uri("/repos/{repo}/pulls/{pr}/files", repoFullName, prNumber)
+                .uri("/repos/{owner}/{repo}/pulls/{pr}/files", parts[0], parts[1], prNumber)
                 .retrieve()
                 .bodyToFlux(ChangedFile.class)
                 .filter(f -> f.filename().endsWith(".java"))
@@ -26,9 +27,10 @@ public class GitHubService {
     }
 
     public void postReview(String repoFullName, int prNumber, String body) {
+        String[] parts = repoFullName.split("/");
         Map<String, String> request = Map.of("body", body, "event", "COMMENT");
         githubWebClient.post()
-                .uri("/repos/{repo}/pulls/{pr}/reviews", repoFullName, prNumber)
+                .uri("/repos/{owner}/{repo}/pulls/{pr}/reviews", parts[0], parts[1], prNumber)
                 .bodyValue(request)
                 .retrieve()
                 .toBodilessEntity()
