@@ -1,0 +1,22 @@
+package com.codebot.review.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record PullRequestEvent(
+        String action,
+
+        @JsonProperty("pull_request")
+        PullRequest pullRequest,
+
+        Repository repository
+) {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record PullRequest(int number, String title) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Repository(
+            @JsonProperty("full_name") String fullName
+    ) {}
+}

@@ -1,0 +1,12 @@
+github:
+  token: ${GITHUB_TOKEN}
+  webhook-secret: ${WEBHOOK_SECRET}
+  api-base: https://api.github.com
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY}
+  api-base: https://api.anthropic.com
+  model: claude-sonnet-4-20250514
+
+server:
+  port: 8080
