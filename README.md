@@ -8,7 +8,7 @@ GitHub Pull Request가 생성되면 Claude AI가 자동으로 코드를 분석�
 - **Spring Security** — `/webhook` 외 엔드포인트 접근 차단
 - **Spring WebFlux WebClient** — GitHub API, Claude API 비동기 호출
 - **Claude API** (`claude-3-5-haiku`) — 코드 분석 및 리뷰 생성
-- **JUnit5 + Mockito** — 단위 테스트 (커버리지 80%+)
+- **JUnit5 + Mockito** — 단위 테스트
 
 ## 동작 흐름
 
