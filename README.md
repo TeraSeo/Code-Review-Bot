@@ -1,101 +1,89 @@
 # AI Code Review Bot
 
-GitHub Pull Request가 생성되면 Claude AI가 자동으로 코드를 분석하고 리뷰 코멘트를 등록하는 백엔드 시스템입니다.
+A backend system that automatically analyzes code and posts review comments using Claude AI whenever a GitHub Pull Request is created.
 
-## 기술 스택
-
+## Tech Stack
 - **Spring Boot 4.0.6** / Java 21 / Maven
-- **Spring Security** — `/webhook` 외 엔드포인트 접근 차단
-- **Spring WebFlux WebClient** — GitHub API, Claude API 비동기 호출
-- **Claude API** (`claude-3-5-haiku`) — 코드 분석 및 리뷰 생성
-- **JUnit5 + Mockito** — 단위 테스트
+- **Spring Security** — blocks access to all endpoints except `/webhook`
+- **Spring WebFlux WebClient** — asynchronous calls to the GitHub API and Claude API
+- **Claude API** (`claude-3-5-haiku`) — code analysis and review generation
+- **JUnit5 + Mockito** — unit testing
 
-## 동작 흐름
-
+## Workflow
 ```
-개발자 PR 생성
-  → GitHub Webhook 발송
-  → HMAC-SHA256 서명 검증
-  → GitHub API로 변경된 .java 파일 조회
-  → Claude API로 코드 분석
-  → GitHub PR에 리뷰 코멘트 자동 등록
+Developer creates a PR
+  → GitHub sends a webhook
+  → HMAC-SHA256 signature verification
+  → Fetch changed .java files via the GitHub API
+  → Analyze code via the Claude API
+  → Automatically post review comments on the GitHub PR
 ```
 
-## 프로젝트 구조
-
+## Project Structure
 ```
 src/main/java/com/codebot/review/
 ├── config/
-│   ├── GithubProperties.java       # GitHub 설정값 (@ConfigurationProperties)
-│   ├── AnthropicProperties.java    # Claude 설정값 (@ConfigurationProperties)
-│   ├── WebClientConfig.java        # WebClient 빈 설정
-│   └── SecurityConfig.java         # 엔드포인트 접근 제어
+│   ├── GithubProperties.java       # GitHub configuration values (@ConfigurationProperties)
+│   ├── AnthropicProperties.java    # Claude configuration values (@ConfigurationProperties)
+│   ├── WebClientConfig.java        # WebClient bean configuration
+│   └── SecurityConfig.java         # Endpoint access control
 ├── controller/
-│   └── WebhookController.java      # POST /webhook 처리
+│   └── WebhookController.java      # Handles POST /webhook
 ├── service/
-│   ├── WebhookVerificationService.java  # HMAC-SHA256 서명 검증
-│   ├── GitHubService.java               # GitHub API 호출
-│   ├── ClaudeService.java               # Claude API 호출
-│   └── ReviewService.java               # 전체 리뷰 흐름 오케스트레이션
+│   ├── WebhookVerificationService.java  # HMAC-SHA256 signature verification
+│   ├── GitHubService.java               # GitHub API calls
+│   ├── ClaudeService.java               # Claude API calls
+│   └── ReviewService.java               # Orchestrates the overall review flow
 └── model/
     ├── PullRequestEvent.java
     └── ChangedFile.java
 ```
 
-## 로컬 실행
+## Running Locally
 
-### 1. 환경변수 설정
-
-IntelliJ `Run > Edit Configurations > Environment variables`에 추가:
-
+### 1. Set Environment Variables
+Add the following in IntelliJ under `Run > Edit Configurations > Environment variables`:
 ```
 GITHUB_TOKEN=ghp_xxxxxxxxxxxx
-WEBHOOK_SECRET=랜덤_문자열
+WEBHOOK_SECRET=random_string
 ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxx
 ```
-
-WEBHOOK_SECRET 생성:
+Generate `WEBHOOK_SECRET`:
 ```bash
 openssl rand -hex 32
 ```
 
-### 2. 서버 실행
-
+### 2. Run the Server
 ```bash
 ./mvnw spring-boot:run
 ```
 
-### 3. ngrok으로 외부 노출
-
+### 3. Expose Locally via ngrok
 ```bash
 ngrok http 8080
 ```
 
-### 4. GitHub Webhook 등록
-
+### 4. Register a GitHub Webhook
 GitHub Repository → Settings → Webhooks → Add webhook
 
-| 항목 | 값 |
+| Field | Value |
 |------|-----|
 | Payload URL | `https://{ngrok-url}/webhook` |
 | Content type | `application/json` |
-| Secret | WEBHOOK_SECRET 값 |
+| Secret | Value of `WEBHOOK_SECRET` |
 | Events | Pull requests |
 
-## 테스트
-
+## Testing
 ```bash
 ./mvnw test
 ```
-
-Jacoco 커버리지 리포트:
+Jacoco coverage report:
 ```bash
 open target/site/jacoco/index.html
 ```
 
-## 주요 구현 포인트
-
-- **HMAC-SHA256 서명 검증**: GitHub Webhook 요청 위변조 방지
-- **Java 21 Record**: 불변 모델 객체로 보일러플레이트 제거
-- **@ConfigurationProperties**: 타입 안전한 설정값 관리
-- **구조화된 프롬프트**: 버그·성능·보안·가독성 관점의 일관된 리뷰 품질 확보
+## Key Implementation Highlights
+- **HMAC-SHA256 signature verification**: prevents tampering with GitHub webhook requests
+- **Java 21 Records**: reduces boilerplate by using immutable model objects
+- **@ConfigurationProperties**: type-safe configuration management
+- **Structured prompts**: ensures consistent review quality across bug, performance, security, and readability perspectives
